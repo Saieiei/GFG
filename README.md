@@ -1,2 +1,2 @@
 # GFG
-all GFG problems i do 
+all GFG problems I do 
