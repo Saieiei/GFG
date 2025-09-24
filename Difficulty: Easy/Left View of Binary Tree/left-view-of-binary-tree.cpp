@@ -16,42 +16,23 @@ public:
 
 class Solution {
   public:
-  //we will basically do level order traversal with NULL
-  //then simply return the 1st of every vector
+  
+    void leftViewHelper(Node* root, int level, vector<int>& ans)
+    {
+        //base case
+        if(root == NULL) return;
+        if(level == ans.size()) ans.push_back(root->data); level++;
+        
+        //recursion
+        leftViewHelper(root->left, level, ans);
+        leftViewHelper(root->right, level, ans);
+    }
+  
+  //to solve this we will use method 2 that is verifying the levelsr
     vector<int> leftView(Node *root) {
-        vector<vector<int>> LOT;
-        vector<int> temp;
         vector<int> ans;
-        
-        queue<Node*> q;
-        q.push(root);
-        q.push(NULL);
-        
-        if(root == NULL) return ans;
-        
-        while(!q.empty())
-        {
-            Node* elementNode = q.front();
-            q.pop();
-            if(elementNode)
-            {
-                temp.push_back(elementNode->data);
-                if(elementNode->left) q.push(elementNode->left);
-                if(elementNode->right) q.push(elementNode->right);
-            }
-            else
-            {
-                LOT.push_back(move(temp));
-                temp.clear();
-                if(!q.empty()) q.push(NULL);
-            }
-        }
-        
-        for(int i=0; i<LOT.size(); i++)
-        {
-            ans.push_back(LOT[i][0]);
-        }
+        int level = 0;
+        leftViewHelper(root, level, ans);
         return ans;
-        
     }
 };
