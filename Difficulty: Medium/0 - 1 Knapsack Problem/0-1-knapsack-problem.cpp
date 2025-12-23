@@ -1,31 +1,36 @@
-//M2 Memoization
+//M4 TabulationSO2
 //we will solve this using include/exclude method
 class Solution {
   public:
   
-    int recursionMemo(int capacity, vector<int> &val, vector<int> &wt, int index, vector<vector<int>>& dp){
-        //3. basecase + check if its there in dp
-        if(index >= wt.size()) return 0; //u can keep val.size() also
-        if(dp[capacity][index] != -1) return dp[capacity][index];
+    int recursionTabuSO2(int capacity, vector<int> &val, vector<int> &wt, int index){
+        //solve it using 2 cols
+        int n = wt.size();
+        //vector<int> curr(capacity+1, 0);
+        vector<int> next(capacity+1, 0);
         
-        //recursion
-        int include = 0;
-        if(wt[index] <= capacity){
-            include = val[index] + recursionMemo(capacity-wt[index], val, wt, index+1, dp);
+        //we have revered row and col because we r filling it col wise
+        for(int i = n-1; i>=0; i--){
+            for(int c = capacity; c>=0; c--){ //reverse this
+                int include = 0;
+                if(wt[i] <= c){
+                    include = val[i] + next[c-wt[i]]; //dp[i+1] = next
+                }
+                int exclude = 0 + next[c];
+        
+                //2. save it in dp
+                next[c] =  max(include, exclude); //dp[i] = curr
+            }
+            //shifting
+            //next = curr;
         }
-        int exclude = 0 + recursionMemo(capacity, val, wt, index+1, dp);
-        
-        //2. save it in dp
-        dp[capacity][index] =  max(include, exclude);
-        return dp[capacity][index];
+        return next[capacity];
     }
-    
   
     int knapsack(int W, vector<int> &val, vector<int> &wt) {
         //1. create dp
         int index = 0;
-        vector<vector<int>>dp (W+1, vector<int>(wt.size()+1, -1));
-        return recursionMemo(W, val, wt, index, dp);
+        return recursionTabuSO2(W, val, wt, index);
         
     }
 };
