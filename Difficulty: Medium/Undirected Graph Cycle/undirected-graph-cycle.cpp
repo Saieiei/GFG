@@ -1,29 +1,31 @@
 class Solution {
   public:
-    bool FindCycleBFS(int& src, unordered_map<int, vector<int>>& adjList, queue<int>& q, unordered_map<int, bool>& visited, unordered_map<int, int>& parents){
-        //intial state
-        q.push(src);
+    bool FindCycleDFS(int src, unordered_map<int, vector<int>>& adjList, unordered_map<int, bool>& visited, int& parent){
         visited[src] = 1;
-        parents[src] = -1;
-        
-        //keep doing it untill ur q is empty
-        while(!q.empty()){
-            int frontNode = q.front();
-            q.pop();
-            for(int nbr: adjList[frontNode]){
-                if(!visited[nbr]){//not visited
-                    visited[nbr] = 1;
-                    q.push(nbr);
-                    parents[nbr] = frontNode;
-                }
-                else{ //its visited
-                    if(parents[frontNode] != nbr)
-                    return true; //cycle found
-                    
-                }
+        for(int nbr: adjList[src]){
+            if(!visited[nbr]){
+                bool ans = FindCycleDFS(nbr, adjList, visited, src);
+                if(ans == true) return true; //cycle found
             }
-        }//no cycle found
-        return false;
+            else{//already visited, then check if it was a parent or not
+                if(nbr != parent) return true; //found cycle
+            }
+        }
+        return false; //didnt find cycle
+    }
+    bool isCycleHelper(unordered_map<int, vector<int>>& adjList, int& V){
+        //initial state
+        //queue<int>q;
+        unordered_map<int, bool>visited;
+        int parent = -1;
+        //multiple component.
+        for(int src = 0; src < V; src++){
+            if(!visited[src]){
+                bool ans = FindCycleDFS(src, adjList, visited, parent);
+                if(ans == true) return ans;//cycle found and returning
+            }
+        }
+        return false;// no cycle
     }
     bool isCycle(int V, vector<vector<int>>& edges) {
         //since its undirected
@@ -38,17 +40,6 @@ class Solution {
             
         }
         
-        queue<int>q;
-        unordered_map<int, bool>visited;
-        unordered_map<int, int>parents;
-
-        //multiple component.
-        for(int src = 0; src < V; src++){
-            if(!visited[src]){
-                bool ans = FindCycleBFS(src, adjList, q, visited, parents);
-                if(ans == true) return ans;//cycle found and returning
-            }
-        }
-        return false;// no cycle
+        return isCycleHelper(adjList, V);
     }
 };
