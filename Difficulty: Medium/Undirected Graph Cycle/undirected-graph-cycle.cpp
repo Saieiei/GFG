@@ -1,36 +1,28 @@
 class Solution {
   public:
-    bool FindCycleDFS(int src, unordered_map<int, vector<int>>& adjList, unordered_map<int, bool>& visited, int& parent){
-        visited[src] = 1;
-        for(int nbr: adjList[src]){
-            if(!visited[nbr]){
-                bool ans = FindCycleDFS(nbr, adjList, visited, src);
-                if(ans == true) return true; //cycle found
+  
+    bool dfs(int i, int parent, unordered_map<int, vector<int>>& adjList, vector<bool>& isVisited){
+        isVisited[i] = true;
+        //explore nbrs
+        for(int nbr: adjList[i]){
+            if(!isVisited[nbr]){
+                if(dfs(nbr, i, adjList, isVisited)){
+                    //cycle is detected
+                    return true;
+                }
             }
-            else{//already visited, then check if it was a parent or not
-                if(nbr != parent) return true; //found cycle
-            }
-        }
-        return false; //didnt find cycle
-    }
-    bool isCycleHelper(unordered_map<int, vector<int>>& adjList, int& V){
-        //initial state
-        //queue<int>q;
-        unordered_map<int, bool>visited;
-        int parent = -1;
-        //multiple component.
-        for(int src = 0; src < V; src++){
-            if(!visited[src]){
-                bool ans = FindCycleDFS(src, adjList, visited, parent);
-                if(ans == true) return ans;//cycle found and returning
+            else if(nbr != parent){
+                return true;
             }
         }
-        return false;// no cycle
+        return false;
     }
+  
     bool isCycle(int V, vector<vector<int>>& edges) {
-        //since its undirected
-        //u->v and v->u
-        //create adjList
+        bool ans = false;
+        int parent = -1;
+        vector<bool> isVisited(V, false);
+        
         unordered_map<int, vector<int>>adjList;
         for(vector<int> edge: edges){
             int u = edge[0];
@@ -40,6 +32,16 @@ class Solution {
             
         }
         
-        return isCycleHelper(adjList, V);
+        //discontinuous graph
+        for(int i=0; i<V; i++){
+            if(!isVisited[i]){
+                if(dfs(i, parent, adjList, isVisited)){
+                    return true;
+                }
+                
+            }
+        }
+        return false;
+        
     }
 };
