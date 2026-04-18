@@ -1,47 +1,42 @@
 class Solution {
   public:
   
-    bool isCycleDFS(int i, vector<int>& isVisited, vector<int>&isPathVisited, vector<vector<int>>& adjList){
-        //mark it as visited
-        isVisited[i] = true;
-        isPathVisited[i] = true;
-        
-        //explore nbrs
-        for(int nbr: adjList[i]){
-            if(!isVisited[nbr]){
-                if(isCycleDFS(nbr, isVisited, isPathVisited, adjList)){
-                    return true;
-                }
-            }
-            else if(isPathVisited[nbr] == true){
-                return true;
-            }
-        }
-        isPathVisited[i] = false;
-        return false;
-    }
-  
     bool isCyclic(int V, vector<vector<int>> &edges) {
+        vector<int> indegree(V);
         //adjList
         vector<vector<int>> adjList(V);
-        for(vector<int> edge: edges){
+        for(vector<int>& edge: edges){
             int u = edge[0];
             int v = edge[1];
-            //directed u->v
+            //directed
+            //u->v
             adjList[u].push_back(v);
+            indegree[v]++;
         }
         
-        vector<int> isVisited(V, false);
-        vector<int> isPathVisited(V, false);
+        queue<int> q;
         
-        //disconnected graph
         for(int i=0; i<V; i++){
-            if(!isVisited[i]){
-                if(isCycleDFS(i, isVisited, isPathVisited, adjList)){
-                    return true;
+            if(indegree[i] == 0){
+                q.push(i);
+            }
+        }
+        
+        vector<int> ans;
+        
+        while(!q.empty()){
+            int frontNode = q.front();
+            q.pop();
+            ans.push_back(frontNode);
+            for(int nbr: adjList[frontNode]){
+                indegree[nbr]--;
+                if(indegree[nbr] == 0){
+                    q.push(nbr);
                 }
             }
         }
-        return false;
+        
+        return (ans.size() == V) ? false : true;
+    
     }
 };
