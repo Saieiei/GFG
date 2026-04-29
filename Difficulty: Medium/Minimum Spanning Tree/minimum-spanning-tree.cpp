@@ -1,66 +1,69 @@
-class Solution
-{
-public:
-    int getMinValueNode(vector<int>& key, vector<int>& mst) {
-        int temp = INT_MAX;
-        int index = -1; // rep. actual node having min value
-        for(int i = 0; i < key.size(); ++i) {
-            if(key[i] < temp && mst[i] == false) {
-                temp = key[i];
-                index = i;
+//MST -> pprims algo
+class Solution {
+  public:
+    int getMinWtIndex(vector<int>& dist, vector<bool>& isVisited, const int V){
+        int index = -1;
+        int wt = INT_MAX;
+        for(int i=0; i<V; i++){
+            if(isVisited[i] == false){
+                if(dist[i] < wt){
+                    wt = dist[i];
+                    index = i;
+                }
             }
         }
         return index;
     }
-
-    // Function to find sum of weights of edges of the Minimum Spanning Tree.
     int spanningTree(int V, vector<vector<int>>& edges) {
-        
-        // Build the adjacency list internally
-        vector<vector<int>> adj[V]; 
-        for(auto edge : edges) {
+        //create adjList 1st
+        vector<vector<pair<int, int>>> adjList(V);
+        for(vector<int> edge: edges){
             int u = edge[0];
             int v = edge[1];
             int w = edge[2];
-            adj[u].push_back({v, w});
-            adj[v].push_back({u, w});
+            //bidirectional
+            adjList[u].push_back({w, v}); // u w v
+            adjList[v].push_back({w, u});
         }
-        // Prim's algorithm
-        vector<int> key(V, INT_MAX);
-        vector<int> mst(V, false); // to keep track which all nodes are added into mst.
-        vector<int> parent(V, -1); // stores final mst relation.
-
-        key[0] = 0;
-
-        while(true) {
-            // Step 1: Get the node with the minimum key value
-            int u = getMinValueNode(key, mst);
-            
-            // If all reachable nodes are visited, getMinValueNode returns -1
-            if(u == -1) break;
-
-            // Step 2: Mark the picked node as included in MST
-            mst[u] = true;
-
-            // Step 3: Process all adjacent nodes to u
-            for(auto edge : adj[u]) {
-                int v = edge[0];
-                int w = edge[1];
-                
-                // If v is not in MST and weight of (u,v) is smaller than current key of v
-                if(mst[v] == false && w < key[v]) {
-                    key[v] = w;
-                    parent[v] = u;
+        
+        //create markers for prims algo
+        vector<bool> isVisited(V, false);
+        vector<int> dist(V, INT_MAX);
+        vector<int> parents(V, -1);
+        //isVisited[0] = true;
+        dist[0] = 0;
+        
+        //start the process
+        while(true){
+            int u =  getMinWtIndex(dist, isVisited, V);
+            if(u == -1){
+                break;
+            }
+            //just mark it as visited
+            isVisited[u] = true;
+            //explore its nbrs
+            for(pair<int, int> nbr: adjList[u]){
+                int w = nbr.first;
+                int v = nbr.second;
+                //check if already visisted
+                if(isVisited[v] == false){
+                    //check the wts
+                    if(w < dist[v]){
+                        //in that case update wts and parents
+                        //and mark it as visited
+                        dist[v] = w;
+                        parents[v] = u;
+                        //isVisited[v] = true;
+                    }
                 }
             }
         }
-        
-        // Calculate the sum of weights of edges in the Minimum Spanning Tree
-        int sum = 0;
-        for(int i = 0; i < V; i++) {
-            sum += key[i];
+        //return the sum
+        int ans = 0;
+        for(int i=0; i<V; i++){
+            ans += dist[i];
         }
+        return ans;
         
-        return sum;
     }
 };
