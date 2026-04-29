@@ -1,63 +1,66 @@
-//we need to have 2 vectores, parents and ranks
-//initialise all parents to itself and the all the ranks to 0
-//we need 2 functions, 1 to find parent another to do union
-//for the processing we need to arerange them based on increasing weights
-//for this we need to have a custom mycmp function
-//we will only do the processing when the parents are not the same
-//to find the parent, if th eparent is itself then return
-//if not them keep recursion and save it directly (path compression)
-//if the Uparent rank is less then the Vparent then Vparent is the parent of Uparent
-//Vparents rank will increase by 1
-//viceversa
-
-
+//kruskals algo
+//findParent
+//findUnion
 class Solution {
   public:
-  static bool mycmp(vector<int>& a, vector<int>& b){
-      return (a[2] < b[2]);
-  }
     int findParent(int node, vector<int>& parents){
+        //check if self parent
         if(parents[node] == node){
             return node;
         }
-        //path compression
+        //do path compression else
         return parents[node] = findParent(parents[node], parents);
     }
-    void unionSet(int uParent, int vParent, vector<int>& parents, vector<int>& ranks){
-        if(ranks[uParent] < ranks[vParent]){
-            parents[uParent] = vParent;
-            ranks[vParent]++;
+    void findUnion(int uParent, int vParent, vector<int>& ranks, vector<int>& parents){
+        int uRank = ranks[uParent];
+        int vRank = ranks[vParent];
+        if(uRank >= vRank){
+            ranks[uParent]++;
+            parents[vParent] = uParent;
         }
         else{
-            parents[vParent] = uParent;
-            ranks[uParent]++;
+            ranks[vParent]++;
+            parents[uParent] = vParent;
         }
     }
+    static bool mycmp(vector<int>& a, vector<int>& b){
+        //0->u, 1->v, 2->w
+        return (a[2]<b[2]);  
+    }
     int kruskalsMST(int V, vector<vector<int>> &edges) {
-        //sort the edges 1st
+        //isVisited is not required
+        //no parents required
+        //no adjList required
+        
+        //trackers
+        int ans =0;
+        vector<int> parents(V);
+        vector<int> ranks(V, 0); //not -1
+        //self parents
+        for(int i=0; i<V; i++){
+            parents[i] = i;
+        }
+        
+        //sort them in ascending order
         sort(edges.begin(), edges.end(), mycmp);
         
-        vector<int> parents(V);
-        for(int u=0; u <V; u++){
-            parents[u] = u;
-        }
-        vector<int> ranks(V, 0);
-        int ans = 0;
-        
-        //start processing
+        //start the process
         for(vector<int> edge: edges){
             int u = edge[0];
             int v = edge[1];
             int w = edge[2];
             
+            //find parents
             int uParent = findParent(u, parents);
             int vParent = findParent(v, parents);
-            //process only when the parents r not the same
+            
+            //union
             if(uParent != vParent){
-                unionSet(uParent, vParent, parents, ranks);
-                ans += w; 
+                findUnion(uParent, vParent, ranks, parents);
+                ans += w;
             }
-        }    
+        }
         return ans;
+        
     }
 };
