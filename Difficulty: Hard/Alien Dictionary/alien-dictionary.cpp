@@ -1,91 +1,97 @@
+//this is a graph q
+//we will solve it via topological sorting
+//we have to convert the given data into graph
+//each node is a letter
 class Solution {
-public:
-    string findOrder(vector<string>& words) {
-        //step1: find the totla no. of nodes
-        unordered_map<char, bool> charFound;
-        unordered_map<char, vector<char>> adjList;
-        unordered_map<char, int> indegree;
-
-        for(auto word: words) {
-            for(auto ch: word) {
-                charFound[ch] = true;
+  public:
+    string findOrder(vector<string> &words) {
+        int n = words.size();
+        //step1 find out how many unique letters r there
+        //because we need that in our ans
+        //and if the size of the ans dont match out
+        //then not possible
+        //during this process we will create the base of topo
+        //that is to create indegrees
+        unordered_map<char, int> indegrees;
+        int totalNodes = 0;
+        unordered_map<char, bool> isVisited;
+        for(string word: words){
+            for(char ch: word){
+                if(isVisited[ch] == false){
+                    totalNodes++;
+                    isVisited[ch] = true;
+                    indegrees[ch] = 0;
+                }
             }
+            
         }
         
-        int totalNodes = 0;
-        for(char ch = 'a'; ch<='z'; ch++) {
-            if(charFound[ch] == true) {
-                totalNodes++;
-            }
-        }
-
-        //step2: create grapg by string comparison
-        for(int i=0; i+1<words.size(); i++) {
+        //2nd step is to create the graph
+        unordered_map<char, vector<char>> adjList;
+        //now while creating the adjList,
+        //we will have idea regarding indegrees of each node
+        //we will take 2 word from the given words
+        //now we can face issues with abnormal values
+        //if word2 is a subset of word1, then we cant do it
+        string ans = "";
+        for(int i=0; i+1<n; i++){
             string word1 = words[i];
             string word2 = words[i+1];
-
-            int minLen = min(word1.size(), word2.size());
-            //coapriing string using j index
-            int j = 0;
-
-            while(j<minLen && word1[j] == word2[j]) {
-                ++j;
+            int word1Size = word1.size();
+            int word2Size = word2.size();
+            int minWordLength = min(word1Size, word2Size);
+            
+            //find the index where the chars r not the same
+            int j=0;
+            while(word1[j] == word2[j] && j<minWordLength){
+                j++;
             }
-            
-            //jab main iss loop se bahar aata hu
-            // normal case -> you found a non-matching character
-            // invalid case -> word2 is a prefix of word1 and word1 > word2
-            
-            if(j < minLen) {
-                //nomal case -> non-matchiong character
+            //we have the index now
+            //but we have to check if its safe
+            if(j<minWordLength){
+                //safe
+                //u->v
+                //directed
                 char u = word1[j];
                 char v = word2[j];
                 adjList[u].push_back(v);
-                //u --> v
-                indegree[v]++;
+                indegrees[v]++;
             }
-            else if(word1.size() > word2.size()) {
-                //invalid case
+            else if(word1Size > word2Size){
+                //not safe, not possible to proceed
                 return "";
             }
         }
-
-        //step3: find topological order
+        
+        //now start the normal topo process
         queue<char> q;
-        for(char ch='a'; ch<='z'; ch++) {
-            if(charFound[ch] == true && indegree[ch] == 0) {
-                q.push(ch);
+        for(pair<const char, int> data: indegrees){
+            char node = data.first;
+            int indegree = data.second;
+            if(indegree == 0){
+                q.push(node);
             }
         }
-
-        string ans = "";
-        while(!q.empty()) {
+        while(!q.empty()){
             char frontNode = q.front();
             q.pop();
-            //ans store
             ans.push_back(frontNode);
-            
-            //for this frontNode, decrement the indegree of all nbr
-            for(auto nbr: adjList[frontNode]) {
-                indegree[nbr]--;
-                if(indegree[nbr] == 0) {
+            //preocess its nbrs
+            for(char nbr: adjList[frontNode]){
+                indegrees[nbr]--;
+                if(indegrees[nbr] == 0){
                     q.push(nbr);
                 }
             }
         }
-
-        //cout << "My ans: " << ans << endl;
-        //step4: check valid or invalid and return ans
-        if(ans.length() == totalNodes) {
-            return ans;
-        }
-        else {
+        
+        //now u have the ans ready
+        //check if it has all the unique letters
+        if(ans.size() != totalNodes){
+            //not possible
             return "";
         }
+        return ans;
         
-        //word1 -> size > word2 size and word 2 prefix of word 1
-        //word2
-        //word1 -> abcd
-        //word2 -> abc
     }
 };
